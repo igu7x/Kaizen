@@ -69,7 +69,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       {/* Crédito do Desenvolvedor - Centro Absoluto */}
       <div 
         className="hidden md:flex flex-col items-center justify-center absolute left-1/2 top-1/2"
-        style={{ transform: 'translate(-20%, -50%)' }}
+        style={{ transform: 'translate(0%, -50%)' }}
       >
         <span 
           className="text-white/70 text-xs tracking-widest uppercase"
