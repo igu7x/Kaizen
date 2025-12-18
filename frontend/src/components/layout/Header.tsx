@@ -66,6 +66,32 @@ export function Header({ onMenuToggle }: HeaderProps) {
         </div>
       </div>
 
+      {/* Crédito do Desenvolvedor - Centro */}
+      <div className="hidden md:flex flex-col items-center justify-center">
+        <span 
+          className="text-white/70 text-xs tracking-widest uppercase"
+          style={{ 
+            fontFamily: "'Poppins', 'Montserrat', sans-serif",
+            letterSpacing: '0.2em'
+          }}
+        >
+          Developed by
+        </span>
+        <span 
+          className="text-white font-semibold text-sm md:text-base"
+          style={{ 
+            fontFamily: "'Poppins', 'Montserrat', sans-serif",
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+            background: 'linear-gradient(90deg, #fff 0%, #90CAF9 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          Igor Cupertino
+        </span>
+      </div>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 text-white hover:bg-white/10">
