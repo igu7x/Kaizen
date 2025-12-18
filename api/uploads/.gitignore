@@ -1,0 +1,13 @@
+# Ignorar todos os arquivos de upload
+*
+
+# Mas manter o diretório
+!.gitignore
+!gestores/.gitkeep
+
+
+
+
+
+
+

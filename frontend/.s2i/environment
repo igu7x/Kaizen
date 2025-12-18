@@ -1,0 +1,21 @@
+# Variáveis de ambiente para o build S2I
+NPM_BUILD=
+NODE_ENV=production
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
