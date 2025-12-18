@@ -1,0 +1,169 @@
+================================================================================
+                    FLUXO DE FUNCIONAMENTO DA PLATAFORMA SGJT
+================================================================================
+
+Este documento descreve como o código funciona nos diferentes ambientes:
+desenvolvimento local e produção no OpenShift.
+
+================================================================================
+                         DIAGRAMA DO FLUXO
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                         AMBIENTE DE DESENVOLVIMENTO                         │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   Seu PC (localhost)                                                        │
+│   ┌─────────────┐      ┌─────────────┐      ┌─────────────────────┐         │
+│   │  Frontend   │ ───► │  Backend    │ ───► │  Banco LOCAL        │         │
+│   │  :5173      │      │  :3001      │      │  plataforma_db      │         │
+│   └─────────────┘      └─────────────┘      └─────────────────────┘         │
+│                                                                             │
+│   Você desenvolve, testa, e quando estiver OK → faz PUSH                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    │ git push
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           AMBIENTE DE PRODUÇÃO (OpenShift)                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│   OpenShift (TJGO)                                                          │
+│   ┌─────────────┐      ┌─────────────┐      ┌─────────────────────┐         │
+│   │  Frontend   │ ───► │  Backend    │ ───► │  Banco CORPORATIVO  │         │
+│   │  Apache     │      │  API        │      │  dbpainel_sgjt      │         │
+│   └─────────────┘      └─────────────┘      └─────────────────────┘         │
+│                                                       │                     │
+│   Admins/Gestores acessam via navegador               │                     │
+│   Todas as alterações são salvas em TEMPO REAL ───────┘                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                         CONFIRMAÇÃO PONTO A PONTO
+================================================================================
+
+#   Requisito                              Status   Como funciona
+--- -------------------------------------- -------- ------------------------------
+1   Desenvolvimento local                  ✅       Frontend (5173) → Backend (3001) → Banco local
+2   Push para OpenShift                    ✅       Git push dispara build automático (S2I)
+3   Dados em tempo real no corporativo     ✅       Backend no OpenShift conecta diretamente ao dbpainel_sgjt
+4   Inserções locais separadas             ✅       Você usa arquivos SQL em api/sql/migrations/
+
+================================================================================
+                    DETECÇÃO AUTOMÁTICA DE AMBIENTE
+================================================================================
+
+FRONTEND (apiClient.ts):
+------------------------
+O frontend detecta automaticamente o ambiente pelo hostname:
+
+- Se hostname contém 'apps.ocp-prd.tjgo.jus.br':
+  → Usa API: https://painel-sgjt-stag-api.apps.ocp-prd.tjgo.jus.br
+
+- Caso contrário (localhost):
+  → Usa API: http://localhost:3001
+
+Código relevante (frontend/src/services/apiClient.ts, linhas 21-28):
+
+    // Produção/Staging no OpenShift
+    if (hostname.includes('apps.ocp-prd.tjgo.jus.br')) {
+        return 'https://painel-sgjt-stag-api.apps.ocp-prd.tjgo.jus.br';
+    }
+    
+    // Desenvolvimento local
+    return 'http://localhost:3001';
+
+
+BACKEND (database.ts):
+----------------------
+O backend usa variáveis de ambiente do arquivo .env:
+
+- LOCAL (.env.local):
+  DB_HOST=localhost
+  DB_NAME=plataforma_db
+  DB_USER=postgres
+  DB_PASSWORD=sua_senha_local
+
+- OPENSHIFT (variáveis de ambiente no container):
+  DB_HOST=sv-bd-h01.tjgo.ldc
+  DB_NAME=dbpainel_sgjt
+  DB_USER=sgjt
+  DB_PASSWORD=****
+
+================================================================================
+                    FLUXO PARA INSERÇÕES DE DADOS
+================================================================================
+
+Quando você criar novos dados localmente (ex: novos OKRs, novos itens PCA):
+
+1. CRIAR UM ARQUIVO SQL na pasta api/sql/migrations/:
+   
+   Exemplo: api/sql/migrations/021_inserir_novos_dados.sql
+
+2. ENVIAR ESSE ARQUIVO para a equipe de banco da infra executar no banco corporativo
+
+EXEMPLOS EXISTENTES:
+--------------------
+api/sql/migrations/
+├── 009_insert_dpe_okrs.sql      ← Exemplo: inserção de OKRs
+├── 010_replace_sgjt_okrs.sql    ← Exemplo: atualização de OKRs
+├── 014_create_pca_items.sql     ← Exemplo: criação de tabela + dados
+├── 019_create_comites.sql       ← Exemplo: criação de comitês
+└── ...
+
+================================================================================
+                              RESUMO
+================================================================================
+
+Ação                          Onde acontece
+----------------------------- ------------------------------------------------
+Desenvolvimento e testes      Localhost → Banco local
+Deploy (após push)            OpenShift → Build automático
+Uso pelos gestores            OpenShift → Banco corporativo (tempo real)
+Novas estruturas/dados        Arquivo SQL → Equipe de banco
+
+================================================================================
+                         COMANDOS ÚTEIS
+================================================================================
+
+DESENVOLVIMENTO LOCAL:
+----------------------
+# Alternar para banco local
+cd api
+use-local.bat
+
+# Iniciar backend
+npm run dev
+
+# Iniciar frontend (em outro terminal)
+cd frontend
+npm run dev
+
+# Acessar: http://localhost:5173
+# Login: igor@gmail.com / Galo2013$
+
+
+ALTERNAR PARA BANCO CORPORATIVO (testes):
+-----------------------------------------
+cd api
+use-corporativo.bat
+npm run dev
+
+
+REINICIAR SERVIDOR (se houver problemas de conexão):
+----------------------------------------------------
+cd api
+restart-dev.bat
+
+
+URLS DE PRODUÇÃO:
+-----------------
+Frontend: https://painel-sgjt-stag-frontend.apps.ocp-prd.tjgo.jus.br/
+Backend:  https://painel-sgjt-stag-api.apps.ocp-prd.tjgo.jus.br/
+
+================================================================================
+                         FIM DO DOCUMENTO
+================================================================================
+
