@@ -19,7 +19,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-[60] px-4 lg:px-6 py-3 flex items-center justify-between"
+      className="sticky top-0 z-[60] px-4 lg:px-6 py-3 flex items-center justify-between relative"
       style={{
         background: 'linear-gradient(135deg, #0A2547 0%, #1565C0 100%)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
@@ -66,8 +66,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
         </div>
       </div>
 
-      {/* Crédito do Desenvolvedor - Centro */}
-      <div className="hidden md:flex flex-col items-center justify-center">
+      {/* Crédito do Desenvolvedor - Centro Absoluto */}
+      <div 
+        className="hidden md:flex flex-col items-center justify-center absolute left-1/2 top-1/2"
+        style={{ transform: 'translate(-50%, -50%)' }}
+      >
         <span 
           className="text-white/70 text-xs tracking-widest uppercase"
           style={{ 
