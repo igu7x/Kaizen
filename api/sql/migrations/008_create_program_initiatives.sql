@@ -13,12 +13,15 @@ CREATE TABLE IF NOT EXISTS program_initiatives (
     board_status VARCHAR(20) DEFAULT 'A_FAZER' CHECK (board_status IN ('A_FAZER', 'FAZENDO', 'FEITO')),
     priority VARCHAR(10) DEFAULT 'NAO' CHECK (priority IN ('SIM', 'NAO')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
-    deleted_at TIMESTAMP WITH TIME ZONE,
-    deleted_by INTEGER
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Adicionar colunas de auditoria se não existirem
+ALTER TABLE program_initiatives
+    ADD COLUMN IF NOT EXISTS updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
+    ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE,
+    ADD COLUMN IF NOT EXISTS deleted_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
 
 -- Criar índices
 CREATE INDEX IF NOT EXISTS idx_program_initiatives_program_id ON program_initiatives(program_id);

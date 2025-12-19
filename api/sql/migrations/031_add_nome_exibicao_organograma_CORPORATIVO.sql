@@ -82,7 +82,12 @@ ORDER BY caminho;
 -- ============================================================
 -- GRANT para o usuário da API
 -- ============================================================
-GRANT SELECT ON pessoas_organograma_hierarquia TO sgjt;
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'sgjt') THEN
+        GRANT SELECT ON pessoas_organograma_hierarquia TO sgjt;
+    END IF;
+END $$;
 
 -- ============================================================
 -- VERIFICAÇÃO

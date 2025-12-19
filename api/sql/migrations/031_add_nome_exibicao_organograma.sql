@@ -27,7 +27,7 @@ WITH RECURSIVE hierarquia AS (
     SELECT 
         g.id,
         g.nome_area,
-        g.nome_exibicao,
+        COALESCE(g.nome_exibicao, '')::VARCHAR(100) AS nome_exibicao,
         g.nome_gestor,
         g.nome_cargo,
         g.foto_gestor,
@@ -39,7 +39,7 @@ WITH RECURSIVE hierarquia AS (
         g.ativo,
         g.ativo = FALSE AS is_deleted,
         1 AS nivel_hierarquia,
-        g.nome_area AS caminho_hierarquia,
+        g.nome_area::TEXT AS caminho_hierarquia,
         ARRAY[g.id] AS ancestrais
     FROM pessoas_organograma_gestores g
     WHERE g.subordinacao_id IS NULL AND g.ativo = TRUE
@@ -50,7 +50,7 @@ WITH RECURSIVE hierarquia AS (
     SELECT 
         g.id,
         g.nome_area,
-        g.nome_exibicao,
+        COALESCE(g.nome_exibicao, '')::VARCHAR(100) AS nome_exibicao,
         g.nome_gestor,
         g.nome_cargo,
         g.foto_gestor,
@@ -62,7 +62,7 @@ WITH RECURSIVE hierarquia AS (
         g.ativo,
         g.ativo = FALSE AS is_deleted,
         h.nivel_hierarquia + 1,
-        h.caminho_hierarquia || ' > ' || g.nome_area,
+        (h.caminho_hierarquia || ' > ' || g.nome_area)::TEXT AS caminho_hierarquia,
         h.ancestrais || g.id
     FROM pessoas_organograma_gestores g
     INNER JOIN hierarquia h ON g.subordinacao_id = h.id
